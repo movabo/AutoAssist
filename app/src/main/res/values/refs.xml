@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <drawable name="notification_icon_running">@android:drawable/ic_dialog_info</drawable>
+    <drawable name="notification_icon_cinema">@android:drawable/ic_lock_silent_mode</drawable>
+    <drawable name="notification_icon_shop">@android:drawable/ic_dialog_map</drawable>
+</resources>

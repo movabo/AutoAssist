@@ -1,0 +1,23 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreferenceCompat
+        android:id="@+id/quiet_cinema"
+        app:key="quiet_cinema"
+        app:title="@string/quiet_cinema"
+        app:summary="@string/quiet_cinema_summary"
+        />
+
+    <SwitchPreferenceCompat
+        app:key="adjust_running"
+        app:title="@string/adjust_running"
+        app:summary="@string/adjust_running_summary"
+        />
+
+    <SwitchPreferenceCompat
+        app:key="shopping_reminder"
+        app:title="@string/shopping_reminder"
+        app:summary="@string/shopping_reminder_summary"
+        />
+
+</PreferenceScreen>

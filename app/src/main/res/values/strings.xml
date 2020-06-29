@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">AutoAssist</string>
+    <string name="quiet_cinema">Quiet cinema</string>
+    <string name="quiet_cinema_summary">Turn of all sounds will still (i.e. not moving) and being at/near a cinema.</string>
+    <string name="adjust_running">Increase volume while running</string>
+    <string name="adjust_running_summary">When changing the activity from anything to running, increase the volume by 20%. When changing back, decrease by 20%.</string>
+    <string name="shopping_reminder">Shopping reminder</string>
+    <string name="shopping_reminder_summary">Remind me that I wanted to shop something when being near a shop.</string>
+    <string name="channel_name">AutoAssist</string>
+    <string name="channel_description">AutoAssists channel</string>
+    <string name="raising_volume">Raising volume</string>
+    <string name="raising_volume_because_running">It seems like you started running. Raising volume by 20%.</string>
+    <string name="lowering_volume">Lowering volume</string>
+    <string name="lowering_volume_because_running">It seems like you stopped running. Lowering volume by 20%.</string>
+    <string name="near_shop">You are near a shop</string>
+    <string name="near_shop_reminder">You wanted to be reminded when near a shop.</string>
+    <string name="in_cinema">Watching a movie</string>
+    <string name="in_cinema_silence">You seem to be watching a movie in a cinema. Disabling any sound.</string>
+
+</resources>
