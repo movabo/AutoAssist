@@ -5,7 +5,7 @@
     <string name="adjust_running">Increase volume while running</string>
     <string name="adjust_running_summary">When changing the activity from anything to running, increase the volume by 20%. When changing back, decrease by 20%.</string>
     <string name="shopping_reminder">Shopping reminder</string>
-    <string name="shopping_reminder_summary">Remind me that I wanted to shop something when being near a shop.</string>
+    <string name="shopping_reminder_summary">Remind me that I wanted to shop something when being near a shop and open the shopping list app (Google Keep, if installed).</string>
     <string name="channel_name">AutoAssist</string>
     <string name="channel_description">AutoAssists channel</string>
     <string name="raising_volume">Raising volume</string>

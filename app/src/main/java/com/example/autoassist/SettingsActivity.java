@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -68,10 +69,12 @@ public class SettingsActivity extends AppCompatActivity {
                 this, Manifest.permission.ACTIVITY_RECOGNITION) !=
                  PackageManager.PERMISSION_GRANTED) {
             // You can directly ask for the permission.
-            requestPermissions(
-                    new String[] { Manifest.permission.ACTIVITY_RECOGNITION },
-                    1
-            );
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                requestPermissions(
+                        new String[] { Manifest.permission.ACTIVITY_RECOGNITION },
+                        1
+                );
+            }
         }
     }
 
@@ -82,33 +85,17 @@ public class SettingsActivity extends AppCompatActivity {
     protected void registerRunningTransitions() {
         List<ActivityTransition> transitions = new ArrayList<>();
 
-        for(int activity: new int[]{
-                DetectedActivity.IN_VEHICLE,
-                DetectedActivity.ON_BICYCLE,
-                DetectedActivity.ON_FOOT,
-                DetectedActivity.STILL,
-                //DetectedActivity.UNKNOWN,
-                // DetectedActivity.TILTING,
-                DetectedActivity.WALKING,
-                DetectedActivity.RUNNING
-        }) {
+        for(int[] transition: ActivityActionsReceiver.REQUIRED_ACTIVITY_TRANSITIONS) {
             transitions.add(
                     new ActivityTransition.Builder()
-                            .setActivityType(activity)
-                            .setActivityTransition(ActivityTransition.ACTIVITY_TRANSITION_ENTER)
+                            .setActivityType(transition[0])
+                            .setActivityTransition(transition[1])
                             .build());
-
-            transitions.add(
-                    new ActivityTransition.Builder()
-                            .setActivityType(activity)
-                            .setActivityTransition(ActivityTransition.ACTIVITY_TRANSITION_EXIT)
-                            .build());
-
         }
 
         ActivityTransitionRequest request = new ActivityTransitionRequest(transitions);
 
-        Intent intent = new Intent(this, ActivityReceiver.class);
+        Intent intent = new Intent(this, ActivityActionsReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 100, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Task<Void> task = ActivityRecognition.getClient(this)
@@ -141,7 +128,6 @@ public class SettingsActivity extends AppCompatActivity {
             Preference cinema  = this.findPreference(CINEMA);
             Preference running = this.findPreference(RUNNING);
             Preference shop    = this.findPreference(SHOP);
-            System.out.println("test");
         }
     }
 }

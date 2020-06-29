@@ -97,8 +97,8 @@ public class NotificationCenter {
     protected void info(String text) {
         final Notification notification = new NotificationCompat.Builder(settingsContext, CHANNEL_ID)
                 .setSmallIcon(R.drawable.notification_icon_running)
-                .setContentTitle(text)
-                .setContentText(LocalDate.now() + " " + LocalTime.now())
+                .setContentTitle(LocalDate.now() + " " + LocalTime.now())
+                .setContentText(text)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .build();
         notificationManager.notify(currentNotification, notification);

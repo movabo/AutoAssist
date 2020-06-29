@@ -28,6 +28,6 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name="com.example.autoassist.ActivityReceiver" />
+        <receiver android:name="com.example.autoassist.ActivityActionsReceiver" />
     </application>
 </manifest>

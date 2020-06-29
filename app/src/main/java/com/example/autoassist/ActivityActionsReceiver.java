@@ -5,17 +5,25 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.util.Log;
+import android.util.Pair;
+
+import androidx.preference.Preference;
 
 import com.google.android.gms.location.ActivityTransition;
 import com.google.android.gms.location.ActivityTransitionEvent;
 import com.google.android.gms.location.ActivityTransitionResult;
 import com.google.android.gms.location.DetectedActivity;
 
-public class ActivityReceiver extends BroadcastReceiver {
+public class ActivityActionsReceiver extends BroadcastReceiver {
 
+    public static int[][] REQUIRED_ACTIVITY_TRANSITIONS = {
+            { DetectedActivity.RUNNING, ActivityTransition.ACTIVITY_TRANSITION_ENTER },
+            { DetectedActivity.RUNNING, ActivityTransition.ACTIVITY_TRANSITION_EXIT },
+            { DetectedActivity.STILL, ActivityTransition.ACTIVITY_TRANSITION_ENTER },
+    };
     RunningActivity runningActivity;
 
-    public ActivityReceiver() {
+    public ActivityActionsReceiver() {
         super();
         Context context = SettingsActivity.getContext();
         runningActivity = new RunningActivity(context);
@@ -29,7 +37,7 @@ public class ActivityReceiver extends BroadcastReceiver {
             ActivityTransitionResult result = ActivityTransitionResult.extractResult(intent);
             for (ActivityTransitionEvent event : result.getTransitionEvents()) {
 
-                new NotificationCenter().info(event.getTransitionType() + "-" + event.getActivityType());
+                new NotificationCenter().info(event.toString());
                 Log.i("ACTIVITY_EVENT", "Activity Type " + event.getActivityType());
                 Log.i("ACTIVITY_EVENT", "Transition Type " + event.getTransitionType());
 
@@ -48,21 +56,22 @@ public class ActivityReceiver extends BroadcastReceiver {
         }
     }
 
-    protected class RunningActivity {
+    protected static class RunningActivity {
         AudioManager audioManager;
 
         RunningActivity(Context context) {
+            //Preference running = context.findPreference(context.RUNNING);
             this.audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
             float percentage = (float) audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC) / 5;
         }
 
         public void raiseVolume() {
-            adjustVolume(100);
+            adjustVolume(20);
             new NotificationCenter().notifyRunning(true);
         }
 
         public void lowerVolume() {
-            adjustVolume(-100);
+            adjustVolume(-20);
             new NotificationCenter().notifyRunning(false);
         }
 
@@ -70,15 +79,24 @@ public class ActivityReceiver extends BroadcastReceiver {
             int min = audioManager.getStreamMinVolume(AudioManager.STREAM_MUSIC);
             int max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
             int current = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-            current = current-min;
-            float increase = current + (float) current / (100.0f * percentage);
-            int newVolume = Math.round(increase) + current + min;
+            current = current - min;
+            int newVolume;
+            // To reduce to the old volume, we need to do the calculation as follow:
+            // increase: current + current * percentage%
+            // decrease: current / (percentage + 100)%
+            if (percentage < 0) {
+                newVolume = Math.round(current / (1 + percentage / 100.0f));
+            } else {
+                float increase = percentage / 100.0f * current;
+                newVolume = Math.round(increase) + current + min;
+            }
             if (newVolume < min) {
                 newVolume = min;
             }
             if (newVolume > max) {
                 newVolume = max;
             }
+            new NotificationCenter().info("Changing from " + current + " to " + newVolume);
             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, 0);
         }
     }
