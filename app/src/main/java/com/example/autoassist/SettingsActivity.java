@@ -34,18 +34,20 @@ public class SettingsActivity extends AppCompatActivity {
     public static final String RUNNING = "adjust_running";
     public static final String SHOP = "shopping_reminder";
 
-    private static Context mContext;
+    private static SettingsActivity mContext;
 
-    private static NotificationCenter notificationCenter;
+    private NotificationCenter notificationCenter;
+    private SettingsFragment settings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this;
+        settings = new SettingsFragment();
         setContentView(R.layout.settings_activity);
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.settings, new SettingsFragment())
+                .replace(R.id.settings, settings)
                 .commit();
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -64,6 +66,18 @@ public class SettingsActivity extends AppCompatActivity {
         registerRunningTransitions();
     }
 
+    public boolean runningSettingIsEnabled() {
+        return settings.findPreference(RUNNING).isEnabled();
+    }
+
+    public boolean cinemaSettingIsEnabled() {
+        return settings.findPreference(CINEMA).isEnabled();
+    }
+
+    public boolean shopSettingIsEnabled() {
+        return settings.findPreference(SHOP).isEnabled();
+    }
+
     public void checkPermissions() {
         if (ContextCompat.checkSelfPermission(
                 this, Manifest.permission.ACTIVITY_RECOGNITION) !=
@@ -78,7 +92,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
-    public static Context getContext() {
+    public static SettingsActivity getContext() {
         return mContext;
     }
 

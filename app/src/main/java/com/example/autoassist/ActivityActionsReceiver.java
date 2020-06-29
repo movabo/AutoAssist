@@ -14,6 +14,11 @@ import com.google.android.gms.location.ActivityTransitionEvent;
 import com.google.android.gms.location.ActivityTransitionResult;
 import com.google.android.gms.location.DetectedActivity;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.Callable;
+
 public class ActivityActionsReceiver extends BroadcastReceiver {
 
     public static int[][] REQUIRED_ACTIVITY_TRANSITIONS = {
@@ -21,12 +26,14 @@ public class ActivityActionsReceiver extends BroadcastReceiver {
             { DetectedActivity.RUNNING, ActivityTransition.ACTIVITY_TRANSITION_EXIT },
             { DetectedActivity.STILL, ActivityTransition.ACTIVITY_TRANSITION_ENTER },
     };
+
     RunningActivity runningActivity;
+    SettingsActivity settingsContext;
 
     public ActivityActionsReceiver() {
         super();
-        Context context = SettingsActivity.getContext();
-        runningActivity = new RunningActivity(context);
+        settingsContext = SettingsActivity.getContext();
+        runningActivity = new RunningActivity(settingsContext);
     }
 
     @Override
@@ -47,12 +54,14 @@ public class ActivityActionsReceiver extends BroadcastReceiver {
     }
 
     private void handleChange(int activity, int transition) {
-        if (activity == DetectedActivity.RUNNING &&
-                transition == ActivityTransition.ACTIVITY_TRANSITION_ENTER) {
-            runningActivity.raiseVolume();
-        } else if(activity == DetectedActivity.RUNNING &&
-                transition == ActivityTransition.ACTIVITY_TRANSITION_EXIT) {
-            runningActivity.lowerVolume();
+        if (settingsContext.runningSettingIsEnabled()) {
+            if (activity == DetectedActivity.RUNNING &&
+                    transition == ActivityTransition.ACTIVITY_TRANSITION_ENTER) {
+                runningActivity.raiseVolume();
+            } else if (activity == DetectedActivity.RUNNING &&
+                    transition == ActivityTransition.ACTIVITY_TRANSITION_EXIT) {
+                runningActivity.lowerVolume();
+            }
         }
     }
 
