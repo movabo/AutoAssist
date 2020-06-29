@@ -25,6 +25,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -79,15 +80,24 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public void checkPermissions() {
-        if (ContextCompat.checkSelfPermission(
-                this, Manifest.permission.ACTIVITY_RECOGNITION) !=
-                 PackageManager.PERMISSION_GRANTED) {
-            // You can directly ask for the permission.
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                requestPermissions(
-                        new String[] { Manifest.permission.ACTIVITY_RECOGNITION },
-                        1
-                );
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ArrayList<String> requiredPermissions = new ArrayList<>(Arrays.asList(
+                    Manifest.permission.ACTIVITY_RECOGNITION,
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            ));
+
+            for (int i = requiredPermissions.size()-1; i >= 0; i--) {
+                if (ContextCompat.checkSelfPermission(
+                        this, requiredPermissions.get(i)) ==
+                        PackageManager.PERMISSION_GRANTED) {
+                    requiredPermissions.remove(i);
+                }
+            }
+
+            if (requiredPermissions.size() > 0) {
+                requestPermissions(requiredPermissions.toArray(new String[]{}), 1);
             }
         }
     }
@@ -99,7 +109,7 @@ public class SettingsActivity extends AppCompatActivity {
     protected void registerRunningTransitions() {
         List<ActivityTransition> transitions = new ArrayList<>();
 
-        for(int[] transition: ActivityActionsReceiver.REQUIRED_ACTIVITY_TRANSITIONS) {
+        for(int[] transition: ActivityActionsReceiver.POSSIBLE_ACTIVITY_TRANSITIONS) {
             transitions.add(
                     new ActivityTransition.Builder()
                             .setActivityType(transition[0])

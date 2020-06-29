@@ -11,6 +11,7 @@ import androidx.core.app.NotificationManagerCompat;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static android.app.PendingIntent.getActivity;
 import static android.provider.Settings.System.getString;
@@ -95,13 +96,14 @@ public class NotificationCenter {
      * Info (i.e. debugging) notification.
      */
     protected void info(String text) {
+        int randomNum = ThreadLocalRandom.current().nextInt(Integer.MIN_VALUE, Integer.MAX_VALUE);
         final Notification notification = new NotificationCompat.Builder(settingsContext, CHANNEL_ID)
                 .setSmallIcon(R.drawable.notification_icon_running)
                 .setContentTitle(LocalDate.now() + " " + LocalTime.now())
                 .setContentText(text)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .build();
-        notificationManager.notify(currentNotification, notification);
+        notificationManager.notify(randomNum, notification);
         currentNotification++;
     }
 }
