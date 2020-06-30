@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.autoassist">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -11,6 +12,7 @@
     -->
 
     <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -28,6 +30,11 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name="com.example.autoassist.ActivityActionsReceiver" />
+        <receiver
+            android:name="com.example.autoassist.ActivityActionsReceiver"
+            android:enabled="true"
+            android:exported="true"
+            tools:ignore="ExportedReceiver"
+            />
     </application>
 </manifest>

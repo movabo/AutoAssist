@@ -2,22 +2,35 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <SwitchPreferenceCompat
-        android:id="@+id/quiet_cinema"
+        app:iconSpaceReserved="false"
         app:key="quiet_cinema"
         app:title="@string/quiet_cinema"
         app:summary="@string/quiet_cinema_summary"
         />
 
     <SwitchPreferenceCompat
+        app:iconSpaceReserved="false"
         app:key="adjust_running"
         app:title="@string/adjust_running"
         app:summary="@string/adjust_running_summary"
         />
 
     <SwitchPreferenceCompat
+        app:iconSpaceReserved="false"
         app:key="shopping_reminder"
         app:title="@string/shopping_reminder"
         app:summary="@string/shopping_reminder_summary"
         />
-
+    <Preference
+        app:iconSpaceReserved="false"
+        android:selectable="false"
+        android:enabled="true"
+        android:title="@string/warning"
+        android:summary="@string/warning_text" />
+    <Preference
+        app:iconSpaceReserved="false"
+        android:selectable="false"
+        android:enabled="true"
+        android:title="@string/attribution"
+        android:summary="@string/attribution_text" />
 </PreferenceScreen>

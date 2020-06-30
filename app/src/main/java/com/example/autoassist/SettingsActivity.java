@@ -1,25 +1,29 @@
 package com.example.autoassist;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 import com.google.android.gms.location.ActivityRecognition;
 import com.google.android.gms.location.ActivityTransition;
 import com.google.android.gms.location.ActivityTransitionRequest;
-import com.google.android.gms.location.DetectedActivity;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -31,55 +35,38 @@ import java.util.List;
 
 public class SettingsActivity extends AppCompatActivity {
 
-    public static final String CINEMA = "quiet_cinema";
-    public static final String RUNNING = "adjust_running";
-    public static final String SHOP = "shopping_reminder";
-
-    private static SettingsActivity mContext;
-
     private NotificationCenter notificationCenter;
-    private SettingsFragment settings;
+
+    private FusedLocationProviderClient fusedLocationClient;
+    private static String TAG = SettingsActivity.class.getSimpleName();
+
+    public final String EXTRA_NOTIFICATION_CENTER = SettingsActivity.class.getCanonicalName() + ".EXTRA_NOTIFICATION_CENTER";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mContext = this;
-        settings = new SettingsFragment();
         setContentView(R.layout.settings_activity);
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.settings, settings)
+                .replace(R.id.settings, new SettingsFragment())
                 .commit();
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
 
         checkPermissions();
-        notificationCenter = new NotificationCenter();
-        // notifyCinema();
-        // notifyRunning(true);
-        // notifyShop();
-        StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-        for (StackTraceElement stackTraceElement : stack) {
-            Log.i("STACK", stackTraceElement.toString());
-        }
-        registerRunningTransitions();
+        notificationCenter = new NotificationCenter(this);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        registerLocationUpdates();
+        registerActivityTransitions();
     }
 
-    public boolean runningSettingIsEnabled() {
-        return settings.findPreference(RUNNING).isEnabled();
-    }
-
-    public boolean cinemaSettingIsEnabled() {
-        return settings.findPreference(CINEMA).isEnabled();
-    }
-
-    public boolean shopSettingIsEnabled() {
-        return settings.findPreference(SHOP).isEnabled();
-    }
-
+    /**
+     * Check if all required permissions are set up and if not request them.
+     * This app is not designed to run when any of this permissions is not granted.
+     *
+     * Ungranted permissions might result in unhandled exceptions.
+     */
     public void checkPermissions() {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ArrayList<String> requiredPermissions = new ArrayList<>(Arrays.asList(
                     Manifest.permission.ACTIVITY_RECOGNITION,
@@ -100,13 +87,56 @@ public class SettingsActivity extends AppCompatActivity {
                 requestPermissions(requiredPermissions.toArray(new String[]{}), 1);
             }
         }
+        if (!notificationManager.isNotificationPolicyAccessGranted()) {
+            Toast.makeText(this, getString(R.string.require_do_not_disturb_access), Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS);
+            startActivity(intent);
+        }
     }
 
-    public static SettingsActivity getContext() {
-        return mContext;
+    /**
+     * Register location updates every for every five seconds and send them to the
+     * ActivityActionsReceiver.
+     *
+     * Required for the shopping reminder.
+     */
+    @SuppressLint("MissingPermission")
+    public void registerLocationUpdates() {
+        LocationRequest request = LocationRequest.create();
+        request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        request.setInterval(5000);
+        request.setMaxWaitTime(5000);
+        request.setFastestInterval(0);
+
+        Intent intent = new Intent(this, ActivityActionsReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 100,
+                intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Task<Void> task = fusedLocationClient.requestLocationUpdates(request, pendingIntent);
+
+        task.addOnSuccessListener(
+                new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                        Log.i(TAG, "Location service set up.");
+                    }
+                }
+        );
+        task.addOnFailureListener(
+                new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e(TAG, e.getMessage(), e);
+                        notificationCenter.info(e.getMessage());
+                    }
+                }
+        );
     }
 
-    protected void registerRunningTransitions() {
+    /**
+     * Register activity transitions required for the quiet cinema and increase volume utility.
+     */
+    protected void registerActivityTransitions() {
         List<ActivityTransition> transitions = new ArrayList<>();
 
         for(int[] transition: ActivityActionsReceiver.POSSIBLE_ACTIVITY_TRANSITIONS) {
@@ -129,7 +159,7 @@ public class SettingsActivity extends AppCompatActivity {
                 new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void result) {
-                        notificationCenter.info("Transition update set up.");
+                        Log.i(TAG, "Transition update set up.");
                     }
                 }
         );
@@ -137,8 +167,7 @@ public class SettingsActivity extends AppCompatActivity {
                 new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.e("TRANSITION", e.getMessage());
-                        e.printStackTrace();
+                        Log.e(TAG, e.getMessage(), e);
                         notificationCenter.info(e.getMessage());
                     }
                 }
@@ -149,9 +178,6 @@ public class SettingsActivity extends AppCompatActivity {
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
-            Preference cinema  = this.findPreference(CINEMA);
-            Preference running = this.findPreference(RUNNING);
-            Preference shop    = this.findPreference(SHOP);
         }
     }
 }
