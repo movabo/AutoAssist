@@ -1,4 +1,4 @@
-# AutoAssist
+# AutoAssist ([Demo](https://www.youtube.com/watch?v=zMs16MfMwWg))
 
 AutoAssist is a proof of concept app which was developed in the context of the
 TK3: Ubiquitous Systems lecture in the summer term of 2020.
@@ -12,7 +12,7 @@ The app supports the user in three scenarios:
  * when running and listening to music (i.e. jogging)
  * when going to the cinema.
 
-### Shopping
+### Shopping ([Demo](https://www.youtube.com/watch?v=zMs16MfMwWg&t=13))
 
 The user needs to buy something but is not in immediate need of
 it.
@@ -36,7 +36,7 @@ could check if the shopping list is empty and automatically turn itself on/off.
 This would replace the action-enabled-button and its context. The new context
 would then be inferred via soft virtual sensors (the notes-app).
 
-### Running
+### Running ([Demo](https://www.youtube.com/watch?v=zMs16MfMwWg&t=66))
 
 This scenario bases on the idea of speed-dependent volume control in cars.
 When the user is running, the user hears more noise than when normal walking
@@ -54,7 +54,7 @@ the user starts running and decreases the volume when the they stop running.
 This would require the usage of either the accelerometer or the GPS sensor
 (both hard sensors in an inferred context).
 
-### Cinema
+### Cinema ([Demo](https://www.youtube.com/watch?v=zMs16MfMwWg&t=89))
 
 The user wants to watch a movie in a cinema. They buy a ticket at the counter,
 walk into the auditorium and sits down, waiting for the movie to start.
