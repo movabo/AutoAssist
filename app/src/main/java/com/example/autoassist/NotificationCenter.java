@@ -31,13 +31,17 @@ public class NotificationCenter {
 
     private static final String LAST_SHOP_NOTIFICATION = "last_shop_notification";
 
-    private static final String CHANNEL_ID = "notification_channel";
+    private static final String CHANNEL_ID = NotificationCenter.class.getCanonicalName() +
+            "notification_channel";
     private NotificationManagerCompat notificationManager;
 
-    private int currentNotification = 5;
     private Context context;
-    private long lastShopNotification = 0;
-    private static long ONE_HOUR = 3600000; // hour in ms
+
+    /**
+     * Min. waiting time between notifications for "shop found".
+     * 3600000 = 1h
+     */
+    private static long SHOP_NOTIFICATION_DELAY = 3600000;
 
     private SharedPreferences sharedPref;
     /**
@@ -57,7 +61,8 @@ public class NotificationCenter {
             channel.setDescription(description);
             // Register the channel with the system; you can't change the importance
             // or other notification behaviors after this
-            NotificationManager notificationManager = this.context.getSystemService(NotificationManager.class);
+            NotificationManager notificationManager = this.context
+                    .getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
         notificationManager = NotificationManagerCompat.from(this.context);
@@ -69,7 +74,8 @@ public class NotificationCenter {
      */
     protected void notifyRunning(boolean startedRunning) {
         int title_id = startedRunning ? R.string.raising_volume : R.string.lowering_volume;
-        int content_id = startedRunning ? R.string.raising_volume_because_running : R.string.lowering_volume_because_running;
+        int content_id = startedRunning ? R.string.raising_volume_because_running :
+                R.string.lowering_volume_because_running;
 
         final Notification notification = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.notification_icon_running)
@@ -82,14 +88,17 @@ public class NotificationCenter {
 
     /**
      * Notify that the user is near a shop and wanted to be notified about it.
+     * Only show this notification at max once every hour.
      */
     protected void notifyShop() {
         long now = System.currentTimeMillis();
 
         // Only show at max one notification per hour:
-        if (sharedPref.getLong(LAST_SHOP_NOTIFICATION, 0) + ONE_HOUR > now) {
-            long wait = (sharedPref.getLong(LAST_SHOP_NOTIFICATION, 0) + ONE_HOUR - now) / 60000;
-            Log.i(TAG, "Waiting at least " + wait + " more minutes for next shop notification.");
+        if (sharedPref.getLong(LAST_SHOP_NOTIFICATION, 0) + SHOP_NOTIFICATION_DELAY > now) {
+            long wait = (sharedPref.getLong(LAST_SHOP_NOTIFICATION, 0)
+                    + SHOP_NOTIFICATION_DELAY - now) / 60000;
+            Log.i(TAG, "Waiting at least " + wait
+                    + " more minutes for next shop notification.");
             return;
         }
         SharedPreferences.Editor editor = sharedPref.edit();
@@ -102,13 +111,14 @@ public class NotificationCenter {
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 100, intent, 0);
 
 
-        NotificationCompat.Builder notification = new NotificationCompat.Builder(context, CHANNEL_ID)
+        NotificationCompat.Builder notification = new NotificationCompat.Builder(context,
+                CHANNEL_ID)
                 .setSmallIcon(R.drawable.notification_icon_shop)
                 .setContentTitle(context.getString(R.string.near_shop))
                 .setContentText(context.getString(R.string.near_shop_reminder))
                 .setPriority(NotificationCompat.PRIORITY_LOW);
 
-        // Show button if notes intent is available.
+        // Show button if notes intent (i.e. a registered default notes app) is available.
         if (intent.resolveActivity(context.getPackageManager()) != null) {
             notification.addAction(R.drawable.notification_icon_shop, context.getString(R.string.open_shopping_list),
                     pendingIntent);
@@ -117,7 +127,8 @@ public class NotificationCenter {
     }
 
     /**
-     * Notify that the user is near a cinema and still and thus the phone is switched to silent mode.
+     * Notify that the user is near a cinema and still and thus the phone is switched to silent
+     * mode.
      */
     protected void notifyCinema() {
         final Notification notification = new NotificationCompat.Builder(context, CHANNEL_ID)
@@ -141,6 +152,5 @@ public class NotificationCenter {
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .build();
         notificationManager.notify(randomNum, notification);
-        currentNotification++;
     }
 }

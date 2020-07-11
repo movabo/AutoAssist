@@ -3,15 +3,15 @@
     <string name="quiet_cinema">Quiet cinema</string>
     <string name="quiet_cinema_summary">Do not disturb while still (i.e. not moving) and being at/near a cinema. Only works in Hesse, Germany.</string>
     <string name="adjust_running">Increase volume while running</string>
-    <string name="adjust_running_summary">When changing the activity from anything to running, increase the volume by 20%. After stopping, decrease by 20%.</string>
+    <string name="adjust_running_summary">When changing the activity from anything to running, increase the volume by 33%. After stopping, decrease by 33%.</string>
     <string name="shopping_reminder">Shopping reminder</string>
     <string name="shopping_reminder_summary">Remind me that I wanted to shop something when being near a shop. If available, prompt to open the notes app. Only works in Hesse, Germany.</string>
     <string name="channel_name">AutoAssist</string>
     <string name="channel_description">AutoAssists channel</string>
     <string name="raising_volume">Raising volume</string>
-    <string name="raising_volume_because_running">It seems like you started running. Raising volume by 20%.</string>
+    <string name="raising_volume_because_running">It seems like you started running. Raising volume by 33%.</string>
     <string name="lowering_volume">Lowering volume</string>
-    <string name="lowering_volume_because_running">It seems like you stopped running. Lowering volume by 20%.</string>
+    <string name="lowering_volume_because_running">It seems like you stopped running. Lowering volume by 33%.</string>
     <string name="near_shop">You are near a shop</string>
     <string name="near_shop_reminder">You wanted to be reminded when near a shop.</string>
     <string name="in_cinema">Watching a movie</string>
@@ -22,5 +22,4 @@
     <string name="warning_text">This is an example app only! The methods might be power consuming and not optimised. This app is only a proof of concept and should not be used otherwise. This app also works only in Hesse, Germany as the location data is hardcoded.</string>
     <string name="attribution">Attribution:</string>
     <string name="attribution_text">This app contains data from the OpenStreetMap database.</string>
-
 </resources>

@@ -35,7 +35,11 @@ public class MapLocations {
     /**
      * Maximum distance until two locations are considered close to each other. (in km)
      */
-    public static final double IS_CLOSE_WHEN_DISTANCE_BELOW = 0.2;
+    public static final double IS_CLOSE_WHEN_DISTANCE_BELOW = 0.1;
+
+    /**
+     * Approx. earth radius in km.
+     */
     private static final int EARTH_RADIUS = 6371;
 
     /**

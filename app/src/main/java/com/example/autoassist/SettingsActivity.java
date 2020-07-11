@@ -40,8 +40,6 @@ public class SettingsActivity extends AppCompatActivity {
     private FusedLocationProviderClient fusedLocationClient;
     private static String TAG = SettingsActivity.class.getSimpleName();
 
-    public final String EXTRA_NOTIFICATION_CENTER = SettingsActivity.class.getCanonicalName() + ".EXTRA_NOTIFICATION_CENTER";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,7 +64,8 @@ public class SettingsActivity extends AppCompatActivity {
      * Ungranted permissions might result in unhandled exceptions.
      */
     public void checkPermissions() {
-        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        NotificationManager notificationManager = (NotificationManager)
+                getSystemService(NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ArrayList<String> requiredPermissions = new ArrayList<>(Arrays.asList(
                     Manifest.permission.ACTIVITY_RECOGNITION,
@@ -75,6 +74,7 @@ public class SettingsActivity extends AppCompatActivity {
                     Manifest.permission.ACCESS_BACKGROUND_LOCATION
             ));
 
+            // Remove permissions which we already have from requiredPermissions.
             for (int i = requiredPermissions.size()-1; i >= 0; i--) {
                 if (ContextCompat.checkSelfPermission(
                         this, requiredPermissions.get(i)) ==
@@ -83,12 +83,19 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             }
 
+            // Request remaining required permissions which we not already have.
             if (requiredPermissions.size() > 0) {
                 requestPermissions(requiredPermissions.toArray(new String[]{}), 1);
             }
         }
+
+        // Do not disturb-permission is a special permission. The user needs to enable this
+        // permission by hand. Thus we open automatically the Settings-View where the user can
+        // enable this.
         if (!notificationManager.isNotificationPolicyAccessGranted()) {
-            Toast.makeText(this, getString(R.string.require_do_not_disturb_access), Toast.LENGTH_LONG).show();
+            Toast.makeText(this,
+                    getString(R.string.require_do_not_disturb_access),
+                    Toast.LENGTH_LONG).show();
             Intent intent = new Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS);
             startActivity(intent);
         }
@@ -104,10 +111,11 @@ public class SettingsActivity extends AppCompatActivity {
     public void registerLocationUpdates() {
         LocationRequest request = LocationRequest.create();
         request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        request.setInterval(5000);
-        request.setMaxWaitTime(5000);
+        request.setInterval(10000);
+        request.setMaxWaitTime(10000);
         request.setFastestInterval(0);
 
+        // Send location updates to ActivityActionsReceiver.class
         Intent intent = new Intent(this, ActivityActionsReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 100,
                 intent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -137,9 +145,10 @@ public class SettingsActivity extends AppCompatActivity {
      * Register activity transitions required for the quiet cinema and increase volume utility.
      */
     protected void registerActivityTransitions() {
+        // Get transitions which we require for a working app.
         List<ActivityTransition> transitions = new ArrayList<>();
 
-        for(int[] transition: ActivityActionsReceiver.POSSIBLE_ACTIVITY_TRANSITIONS) {
+        for(int[] transition: ActivityActionsReceiver.REQUIRED_ACTIVITY_TRANSITIONS) {
             transitions.add(
                     new ActivityTransition.Builder()
                             .setActivityType(transition[0])
@@ -147,10 +156,12 @@ public class SettingsActivity extends AppCompatActivity {
                             .build());
         }
 
+        // request those transmission updates; Sent to ActivityActionsReceiver.class.
         ActivityTransitionRequest request = new ActivityTransitionRequest(transitions);
 
         Intent intent = new Intent(this, ActivityActionsReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 100, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 100,
+                intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Task<Void> task = ActivityRecognition.getClient(this)
                 .requestActivityTransitionUpdates(request, pendingIntent);

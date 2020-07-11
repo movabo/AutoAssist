@@ -116,6 +116,7 @@ public class ActivityActionsReceiver extends BroadcastReceiver {
             notificationCenter = new NotificationCenter(context);
         }
 
+        // Check which settings are enabled; Set instance variables.
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         cinemaSettingIsEnabled = sharedPref.getBoolean(CINEMA, true);
         runningSettingIsEnabled = sharedPref.getBoolean(RUNNING, true);
@@ -125,16 +126,19 @@ public class ActivityActionsReceiver extends BroadcastReceiver {
         Bundle bundle = intent.getExtras();
         if (bundle != null) {
             for (String key : bundle.keySet()) {
-                Log.i(TAG, "Intent -> " + key + ": " + (bundle.get(key) != null ? bundle.get(key) : "NULL"));
+                Log.i(TAG, "Intent -> " + key + ": " + (bundle.get(key) != null ?
+                        bundle.get(key) : "NULL"));
             }
         }
 
+        // Is location intent? -> handle location change.
         if (LocationResult.hasResult(intent)) {
             LocationResult locationResult = LocationResult.extractResult(intent);
             Location location = locationResult.getLastLocation();
             handleLocationChange(location);
         }
 
+        // Is activity transition? -> Handle change from old / to new activity.
         if (ActivityTransitionResult.hasResult(intent)) {
             ActivityTransitionResult result = ActivityTransitionResult.extractResult(intent);
             for (ActivityTransitionEvent event : result.getTransitionEvents()) {
@@ -166,6 +170,7 @@ public class ActivityActionsReceiver extends BroadcastReceiver {
      */
     private void handleTransition(int activity, int transition) {
         if (runningSettingIsEnabled) {
+            // Raise / lower volume when entering / leaving RUNNING state.
             runningActivity.setContext(context);
             runningActivity.setNotificationCenter(notificationCenter);
             if (activity == DetectedActivity.RUNNING &&
@@ -177,6 +182,8 @@ public class ActivityActionsReceiver extends BroadcastReceiver {
             }
         }
         if (cinemaSettingIsEnabled) {
+            // trigger cinema activity, which is basically starting do-not-disturb mode when near
+            // a cinema.
             if (activity == DetectedActivity.STILL &&
                     transition == ActivityTransition.ACTIVITY_TRANSITION_ENTER) {
                 triggerCinemaActivity();
@@ -191,6 +198,7 @@ public class ActivityActionsReceiver extends BroadcastReceiver {
      */
     @SuppressLint("MissingPermission") // Should be checked beforehand!
     public void triggerCinemaActivity() {
+        // Get last location.
         Task<Location> location = LocationServices.getFusedLocationProviderClient(context)
                 .getLastLocation();
         final NotificationManager notificationManager = (NotificationManager) context
@@ -200,8 +208,11 @@ public class ActivityActionsReceiver extends BroadcastReceiver {
                     @Override
                     public void onSuccess(Location location) {
                         if (location != null) {
+                            // We got the location!
                             if (MapLocations.isCloseToCinema(location)) {
+                                // Check if we have do-not-disturb permission.
                                 if (notificationManager.isNotificationPolicyAccessGranted()) {
+                                    // Enable dnd.
                                     notificationManager.setInterruptionFilter(NotificationManager
                                             .INTERRUPTION_FILTER_NONE);
                                     notificationCenter.notifyCinema();
@@ -232,7 +243,7 @@ public class ActivityActionsReceiver extends BroadcastReceiver {
     protected static class RunningActivity {
         AudioManager audioManager;
         NotificationCenter notificationCenter;
-        public static int RAISE_PERCENTAGE = 20;
+        public static int RAISE_PERCENTAGE = 33;
 
         public void setNotificationCenter(NotificationCenter notificationCenter) {
             this.notificationCenter = notificationCenter;
@@ -271,9 +282,9 @@ public class ActivityActionsReceiver extends BroadcastReceiver {
             int newVolume;
             // To reduce to the old volume, we need to do the calculation as follow:
             // increase: current + current * percentage%
-            // decrease: current / (percentage + 100)%
+            // decrease: current / (|percentage| + 100)%
             if (percentage < 0) {
-                newVolume = Math.round(current / (1 + percentage / 100.0f));
+                newVolume = Math.round(current / (1 + Math.abs(percentage) / 100.0f));
             } else {
                 float increase = percentage / 100.0f * current;
                 newVolume = Math.round(increase) + current + min;
